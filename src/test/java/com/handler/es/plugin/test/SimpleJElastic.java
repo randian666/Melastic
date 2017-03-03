@@ -86,6 +86,7 @@ public class SimpleJElastic {
         String json = client.select("index_lx", "user", "5");
         System.out.println("查询结果 result:"+json);
     }
+
     @Test
     public void search(){
         Gson g= null;
