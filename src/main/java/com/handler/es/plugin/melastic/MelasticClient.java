@@ -26,7 +26,7 @@ import java.util.Collection;
  */
 public class MelasticClient extends MelasticAction implements MelasticService {
     public static final Logger log = LoggerFactory.getLogger(MelasticClient.class);
-    private TransportClient transportClient;
+    public TransportClient transportClient;
 
     /**
      * construct rely on

@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.handler.es.plugin.melastic.MelasticClient;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.util.JSONPObject;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.transport.TransportClient;
@@ -33,19 +34,14 @@ import java.util.Map;
  */
 public class SimpleJElastic {
     ApplicationContext context = new ClassPathXmlApplicationContext("spring-bean-elastic.xml");
-    TransportClient transportClient = null;
     MelasticClient client=null;
     @Before
     public void init(){
-        transportClient = (TransportClient) context.getBean("elasticClient");
-        if(null != transportClient ){
-            printf("init Elastic client finish!");
-        }
-        client=new MelasticClient(transportClient);
+        client = (MelasticClient) context.getBean("elasticClient");
     }
     @Test
     public void createIndex(){
-        User vmodel1 = new User(6,"兰陵王",new Date(),"一个人，没有同类斩草除根刀锋所划之地，便是疆土");
+        User vmodel1 = new User(12,"兰陵王",new Date(),"一个人，没有同类斩草除根刀锋所划之地，便是疆土");
         int result = client.indexCreate("index_lx", "user", vmodel1);
         printf("创建索引结果result:"+result);
     }
@@ -77,7 +73,7 @@ public class SimpleJElastic {
 //        lists.add(vmodel1);
 //        lists.add(vmodel2);
 
-        User vmodel1 = new User(5,"兰陵王",new Date(),"一个人，没有同类斩草除根刀锋所划之地，便是疆土");
+        User vmodel1 = new User(6,"兰陵王",new Date(),"一个人，没有同类斩草除根刀锋所划之地，便是疆土");
         int result = client.updateIndex("index_lx", "user", vmodel1);
         printf("修改索引结果result:"+result);
     }

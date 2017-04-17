@@ -1,6 +1,7 @@
 package com.handler.es.plugin;
 
 import com.handler.es.plugin.exception.MElasticRunTimeException;
+import com.handler.es.plugin.melastic.MelasticClient;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
@@ -29,6 +30,7 @@ public class ElasticFactoryBean implements FactoryBean, Serializable {
     private Integer indexNumberOfShards=1;
     private Integer numberOfShards=5;
     private TransportClient client=null;
+    private MelasticClient melasticClient=null;
 
     public TransportClient initClient() {
         Settings settings = Settings
@@ -76,8 +78,9 @@ public class ElasticFactoryBean implements FactoryBean, Serializable {
         }
         if(null == this.client){
             this.client = initClient();
+            melasticClient=new MelasticClient(this.client);//工具类
         }
-        return client;
+        return melasticClient;
     }
 
     public Class<?> getObjectType() {
