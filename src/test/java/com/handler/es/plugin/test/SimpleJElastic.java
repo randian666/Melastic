@@ -72,7 +72,6 @@ public class SimpleJElastic {
 //        List<User> lists=new ArrayList<User>();
 //        lists.add(vmodel1);
 //        lists.add(vmodel2);
-
         User vmodel1 = new User(6,"兰陵王",new Date(),"一个人，没有同类斩草除根刀锋所划之地，便是疆土");
         int result = client.updateIndex("index_lx", "user", vmodel1);
         printf("修改索引结果result:"+result);
