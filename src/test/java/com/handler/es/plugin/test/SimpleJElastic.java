@@ -35,6 +35,7 @@ import java.util.Map;
 public class SimpleJElastic {
     ApplicationContext context = new ClassPathXmlApplicationContext("spring-bean-elastic.xml");
     MelasticClient client=null;
+
     @Before
     public void init(){
         client = (MelasticClient) context.getBean("elasticClient");
