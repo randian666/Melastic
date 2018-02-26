@@ -15,6 +15,7 @@ import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +36,28 @@ public class MelasticClient extends MelasticAction implements MelasticService {
     public MelasticClient(TransportClient transportClient){
         this.transportClient = transportClient;
     }
+    /**
+     * 用java字符串创建document
+     */
+    @Override
+    public void indexWithStr(String indexName, String typeName,String docId,String json) {
+        //手工构建json字符串
 
+        //指定索引名称，type名称和documentId(documentId可选，不设置则系统自动生成)创建document
+        //IndexResponse response = client.prepareIndex(indexName, typeName)
+        IndexResponse response = transportClient.prepareIndex(indexName, typeName, docId)
+                .setSource(json)
+                .execute()
+                .actionGet();
+        log.info(response.toString());
+        //response中返回索引名称，type名称，doc的Id和版本信息
+/*        String index = response.getIndex();
+        String type = response.getType();
+        String id = response.getId();
+        long version = response.getVersion();
+        boolean created = response.isCreated();
+        System.out.println(index+","+type+","+id+","+version+","+created);*/
+    }
     @Override
     public int indexCreate(String indexName, String typeName, Object source) {
         mappingSetting(transportClient,indexName,typeName,source);//设置mapping
@@ -181,7 +203,7 @@ public class MelasticClient extends MelasticAction implements MelasticService {
 
     @Override
     public SearchResponse search(String indexName, String typeName, SearchType searchType,
-                                 QueryBuilder queryBuilder, QueryBuilder filterBuilder,SortBuilder sort,Integer nowPage, Integer pageSize, Collection<String> highFields) {
+                                 QueryBuilder queryBuilder, QueryBuilder filterBuilder,SortBuilder sort,AbstractAggregationBuilder aggs,Integer nowPage, Integer pageSize, Collection<String> highFields) {
         SearchRequestBuilder searchRequestBuilder = transportClient.prepareSearch(indexName).setTypes(typeName);//查询器
         if( null != searchType ){//查询类型
             searchRequestBuilder.setSearchType(searchType);
@@ -209,6 +231,9 @@ public class MelasticClient extends MelasticAction implements MelasticService {
             }
             searchRequestBuilder.setHighlighterPreTags(HIGHLIGHTER_PRE_TAGS);
             searchRequestBuilder.setHighlighterPostTags(HIGHLIGHTER_END_TAGS);
+        }
+        if (null!=aggs){
+            searchRequestBuilder.addAggregation(aggs);
         }
         SearchResponse searchResponse = searchRequestBuilder.setExplain(true)// 设置是否按查询匹配度排序
                 .execute().actionGet();

@@ -3,6 +3,7 @@ package com.handler.es.plugin.melastic;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.sort.SortBuilder;
 
 import java.util.Collection;
@@ -11,6 +12,7 @@ import java.util.Collection;
  * Created by liuxun on 2017/3/2.
  */
 public interface MelasticService {
+    void indexWithStr(String indexName, String typeName,String docId,String json);
     /***
      * 创建索引
      * @param indexName
@@ -87,7 +89,6 @@ public interface MelasticService {
      * @param highFields
      * @return
      */
-    SearchResponse search(String indexName, String typeName, SearchType searchType,
-                          QueryBuilder queryBuilder, QueryBuilder filterBuilder, SortBuilder sort, Integer nowPage, Integer pageSize, Collection<String> highFields);
-
+    public SearchResponse search(String indexName, String typeName, SearchType searchType,
+                                 QueryBuilder queryBuilder, QueryBuilder filterBuilder, SortBuilder sort, AbstractAggregationBuilder aggs, Integer nowPage, Integer pageSize, Collection<String> highFields);
 }

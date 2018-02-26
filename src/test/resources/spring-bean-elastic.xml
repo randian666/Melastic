@@ -6,16 +6,8 @@
     <description>Elastic客户端</description>
 
     <bean id="elasticClient" class="com.handler.es.plugin.ElasticFactoryBean">
-        <property name="clusterName" value="coupon-v2" />
-        <property name="autoCreateIndex" value="false" />
-        <property name="discoveryType" value="zen" />
-        <property name="minimumMasterNodes" value="1" />
-        <property name="pingTimeout" value="200" />
-        <property name="initialStateTimeout" value="500" />
-        <property name="gatewayType" value="local" />
-        <property name="schedule" value="50" />
-        <property name="indexNumberOfShards" value="1" />
-        <!--<property name="numberOfShards" value="5"/>-->
-        <property name="serverAddress" value="192.168.183.104:9301,192.168.183.105:9301" />
+        <property name="clusterName" value="jiesi-2.1.2" />
+        <property name="serverAddress" value="127.0.0.1:20102" />
+        <property name="sniff" value="true"/>
     </bean>
 </beans>

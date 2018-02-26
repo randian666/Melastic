@@ -9,11 +9,21 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.text.Text;
-import org.elasticsearch.index.query.ExistsQueryBuilder;
-import org.elasticsearch.index.query.MoreLikeThisQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.QueryStringQueryBuilder;
+import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.aggregations.Aggregation;
+import org.elasticsearch.search.aggregations.AggregationBuilder;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.bucket.terms.LongTerms;
+import org.elasticsearch.search.aggregations.bucket.terms.StringTerms;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms;
+import org.elasticsearch.search.aggregations.bucket.terms.TermsBuilder;
+import org.elasticsearch.search.aggregations.metrics.avg.InternalAvg;
+import org.elasticsearch.search.aggregations.metrics.percentiles.Percentile;
+import org.elasticsearch.search.aggregations.metrics.sum.InternalSum;
+import org.elasticsearch.search.aggregations.metrics.sum.Sum;
+import org.elasticsearch.search.aggregations.metrics.sum.SumBuilder;
 import org.elasticsearch.search.highlight.HighlightField;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
@@ -24,10 +34,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by liuxun on 2017/3/2.
@@ -75,14 +82,54 @@ public class SimpleJElastic {
 //        lists.add(vmodel2);
         User vmodel1 = new User(6,"兰陵王",new Date(),"一个人，没有同类斩草除根刀锋所划之地，便是疆土");
         int result = client.updateIndex("index_lx", "user", vmodel1);
+
         printf("修改索引结果result:"+result);
     }
     @Test
     public void select(){
-        String json = client.select("index_lx", "user", "5");
+        String json = client.select("coupon_carry_over_dept_channel_20180203", "coupon_dept_channel_his", "3@#0@#0@#0@#item@#0@#20180203@#0.0.2");
         System.out.println("查询结果 result:"+json);
     }
+    @Test
+    public void mustSear(){
+//        String json4 = "{" +
+//                "\"dept\":\"01111\"," +
+//                "\"channel\":\"item\"," +
+//                "\"dataDate\":\"2018-02-04\"," +
+//                "\"effectType\":\"0\"," +
+//                "\"useCoupon\":\"20\"," +
+//                "\"batchId\":\"484848\"," +
+//                "\"sendCoupon\":\"100\"" +
+//                "}";
+//        client.indexWithStr("coupon_carry_over_dept_channel_20180203", "coupon_dept_channel_his","1@#0@#2@#484848@#item@#0@#20180204@#0.0.2",json4);
 
+        TermQueryBuilder query1 = QueryBuilders.termQuery("batchId", "484848");
+        RangeQueryBuilder query2 = QueryBuilders.rangeQuery("sendCoupon").gt(0);
+        TermQueryBuilder query3 = QueryBuilders.termQuery("channel", "0");
+        QueryBuilder query = QueryBuilders.boolQuery().must(query1).must(query2).mustNot(query3);
+
+//        SumBuilder sumagg= AggregationBuilders.sum("sendCoupon_sum ").field("sendCoupon");
+
+        AggregationBuilder sumagg = AggregationBuilders
+                .terms("term_by_channel")
+                .field("channel")//分组字段
+                .subAggregation(AggregationBuilders.sum("sendCoupon_sum").field("sendCoupon"));//求和字段
+
+
+        SearchResponse response = client.search("coupon_carry_over_dept_channel_20180203", "coupon_dept_channel_his", SearchType.DFS_QUERY_THEN_FETCH, query, null, null,sumagg, 0, 10, null);
+
+        Terms aggs = response.getAggregations().get("term_by_channel");
+        // For each entry
+        for (Terms.Bucket entry : aggs.getBuckets()) {
+            //获取count的和
+            Sum sum= entry.getAggregations().get("sendCoupon_sum");
+            System.out.println(entry.getKey()+"  " + entry.getDocCount() +"  "+sum.getValue());
+        }
+        for (SearchHit hit : response.getHits()) {
+            String json = hit.getSourceAsString();
+            System.out.println(json);
+        }
+    }
     @Test
     public void search(){
         Gson g= null;
@@ -107,7 +154,7 @@ public class SimpleJElastic {
              DFS_QUERY_THEN_FETCH：与QUERY_THEN_FETCH相同，预期一个初始的散射相伴用来为更准确的score计算分配了的term频率。
              DFS_QUERY_AND_FETCH:与QUERY_AND_FETCH相同，预期一个初始的散射相伴用来为更准确的score计算分配了的term频率。
              */
-            SearchResponse response = client.search("index_lx", "user", SearchType.DFS_QUERY_THEN_FETCH, queryBuilder, filtetQuery, sortBuilder, 0, 10, list);
+            SearchResponse response = client.search("index_lx", "user", SearchType.DFS_QUERY_THEN_FETCH, queryBuilder, filtetQuery, sortBuilder, null,0, 10, list);
             lists = new ArrayList<User>();
             for (SearchHit hit : response.getHits()) {
                 //将文档中的每一个对象转换json串值
